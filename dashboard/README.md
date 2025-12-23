@@ -2,6 +2,15 @@
 
 This is a local dashboard to monitor your NerdMiner fleet via UDP.
 
+# Tips.
+
+Found this useful? buy me a beer or send a tip, In no way required what so ever, but much appreciated
+
+BTC:bc1qjqhg5c2f6da8y4qr7upegwhkvl2376xzlpwf5p
+ETH:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
+SOL:GTMphvuZU3QsHbieCwWutf1gRGmLWWEVY5dPq73pkgnz
+USDC on Eth:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
+
 ## Features
 
 *   **Real-time Monitoring**: Live updates via UDP Broadcast (port 33333).
