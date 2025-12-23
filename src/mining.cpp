@@ -1212,6 +1212,13 @@ void runMonitor(void *name)
   
   WiFiUDP udp;
 
+  String fullWallet = Settings.BtcWallet;
+  String minerName = "Unknown";
+  int dotIndex = fullWallet.indexOf('.');
+  if (dotIndex != -1) {
+      minerName = fullWallet.substring(dotIndex + 1);
+  }
+
   unsigned long mLastCheck = 0;
 
   resetToFirstScreen();
@@ -1276,6 +1283,9 @@ void runMonitor(void *name)
       if (WiFi.status() == WL_CONNECTED) {
           StaticJsonDocument<256> doc;
           doc["id"] = WiFi.macAddress();
+          doc["miner"] = minerName;
+          doc["pool"] = Settings.PoolAddress + ":" + String(Settings.PoolPort);
+          doc["bestDiff"] = String(best_diff, 5);
           doc["hashrate"] = String((double)elapsedKHs * 1000.0 / (double)mElapsed, 2);
           doc["shares"] = shares;
           doc["valid"] = valids;

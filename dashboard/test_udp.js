@@ -6,6 +6,9 @@ client.bind(0, () => {
 
 const message = JSON.stringify({
     id: "TEST_MINER_01",
+    miner: "Miner_Alpha",
+    pool: "pool.nerdminers.org:3333",
+    bestDiff: "42.00001",
     hashrate: "123.45",
     shares: 10,
     valid: 9,

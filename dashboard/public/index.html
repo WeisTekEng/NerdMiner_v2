@@ -47,6 +47,7 @@
             font-weight: 800;
             font-size: 2.5rem;
             background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            background-clip: text;
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             margin: 0;
@@ -183,30 +184,50 @@
             return div;
         }
 
+        function formatHashrate(strValue) {
+            const val = parseFloat(strValue);
+            if (isNaN(val)) return '0 <span style="font-size: 0.8rem">H/s</span>';
+
+            if (val >= 1000) {
+                return `${(val / 1000).toFixed(2)} <span style="font-size: 0.8rem">MH/s</span>`;
+            } else if (val < 1 && val > 0) {
+                return `${(val * 1000).toFixed(0)} <span style="font-size: 0.8rem">H/s</span>`;
+            } else {
+                return `${val.toFixed(2)} <span style="font-size: 0.8rem">KH/s</span>`;
+            }
+        }
+
         function updateCardHTML(miner) {
             const tempClass = parseFloat(miner.temp) > 70 ? 'temp-high' : '';
+            const displayName = (miner.miner && miner.miner !== 'Unknown') ? miner.miner : (miner.id || 'Unknown');
+            const hashrateDisplay = formatHashrate(miner.hashrate);
+
             return `
                 <div class="card-header">
                     <div>
-                        <div class="miner-id">${miner.id || 'Unknown'}</div>
+                        <div class="miner-id">${displayName}</div>
                         <div class="miner-ip">${miner.ip}</div>
                     </div>
                     <div class="status-badge">
                         <span class="status-dot"></span> Online
                     </div>
                 </div>
+                <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                    <div style="font-size: 0.8rem; color: #94a3b8;">Pool: <span style="color: #f8fafc;">${miner.pool || 'Unknown'}</span></div>
+                    ${(miner.miner && miner.miner !== 'Unknown') ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem;">ID: <span style="font-family: monospace;">${miner.id}</span></div>` : ''}
+                </div>
                 <div class="stats-grid">
                     <div class="stat-item" style="grid-column: span 2;">
                         <span class="stat-label">Hashrate</span>
-                        <span class="stat-value hashrate">${miner.hashrate} <span style="font-size: 0.8rem">KH/s</span></span>
+                        <span class="stat-value hashrate">${hashrateDisplay}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Valid Shares</span>
                         <span class="stat-value">${miner.valid}</span>
                     </div>
                     <div class="stat-item">
-                        <span class="stat-label">Total Shares</span>
-                        <span class="stat-value">${miner.shares}</span>
+                        <span class="stat-label">Best Diff</span>
+                        <span class="stat-value">${miner.bestDiff || '0'}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Temp</span>
@@ -246,7 +267,7 @@
                 }
             });
 
-            totalHashEl.innerText = `${totalHash.toFixed(2)} KH/s Total`;
+            totalHashEl.innerHTML = `${formatHashrate(totalHash)} Total`;
         }
 
         socket.on('init_miners', (data) => {
