@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NerdMiner Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* CSS Tokens */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .miner-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .miner-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .miner-id {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .miner-ip {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-color);
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .hashrate {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .temp-high {
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>NerdMiner Fleet</h1>
+            <div id="total-hashrate" style="font-size: 1.25rem; color: var(--accent-color);">0 KH/s</div>
+        </header>
+
+        <!-- Bitcoin Stats Card -->
+        <div id="bitcoin-card" class="miner-card" style="margin-bottom: 2rem; display: none;">
+            <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg" width="32" height="32"
+                        alt="BTC">
+                    <div>
+                        <div class="miner-id">Bitcoin Network</div>
+                        <div class="miner-ip" id="btc-price">Loading...</div>
+                    </div>
+                </div>
+                <div class="status-badge" style="background-color: rgba(247, 147, 26, 0.1); color: #f7931a;">
+                    <span class="status-dot" style="background-color: #f7931a; box-shadow: 0 0 10px #f7931a;"></span>
+                    Live
+                </div>
+            </div>
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                <div class="stat-item">
+                    <span class="stat-label">Block Height</span>
+                    <span class="stat-value" id="btc-height">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Halving</span>
+                    <span class="stat-value" id="btc-halving">-</span>
+                    <div
+                        style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px;">
+                        <div id="btc-halving-bar"
+                            style="width: 0%; height: 100%; background: #f7931a; border-radius: 2px; transition: width 1s;">
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Difficulty</span>
+                    <span class="stat-value" id="btc-diff">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Network Hash</span>
+                    <span class="stat-value" id="btc-network-hash">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Fees (Sat/vB)</span>
+                    <span class="stat-value" id="btc-fees">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hashrate History Card -->
+        <div id="hashrate-graph-card" class="miner-card" style="margin-bottom: 2rem;">
+            <div class="card-header">
+                <div>
+                    <div class="miner-id">Total Hashrate (Last 24 Hours)</div>
+                    <div class="miner-ip">Fleet Performance</div>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 3fr 1fr; gap: 1.5rem;">
+                <div style="position: relative; height: 300px; width:100%">
+                    <canvas id="hashrateChart"></canvas>
+                </div>
+                <div
+                    style="display: flex; flex-direction: column; justify-content: center; align-items: center; background: rgba(0,0,0,0.2); border-radius: 0.5rem; padding: 1rem;">
+                    <div
+                        style="font-size: 0.875rem; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                        24h Average</div>
+                    <div id="hourly-avg" style="font-size: 2rem; font-weight: 800; color: #10b981;">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div id="miners-grid" class="grid">
+            <!-- Miner cards will be injected here -->
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    </script>
+    <script src="script.js"></script>
+</body>
+</body>
+
+</html>

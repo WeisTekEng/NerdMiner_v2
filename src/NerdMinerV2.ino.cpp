@@ -105,7 +105,7 @@ void setup()
   #endif
 
   /******** INIT NERDMINER ************/
-  Serial.println("NerdMiner v2 starting......");
+  Serial.println("NerdMiner v2 UDP ENABLED......");
 
   /******** INIT DISPLAY ************/
   initDisplay();
