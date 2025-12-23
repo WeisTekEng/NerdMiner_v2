@@ -56,9 +56,15 @@ docker-compose -f docker-compose.windows.yml up -d --build
 **Note:** UDP broadcasts from miners may not reach the container on Windows due to Docker's networking limitations. For full functionality, deploy on Linux/Umbrel.
 
 ### Umbrel
-This app is ready for the Umbrel.
-1.  Copy the `dashboard` folder to your Umbrel apps directory.
-2.  Install via the Umbrel UI (or side-load).
+This app is ready for Umbrel.
+1.  install Portainer from the umbrel app store
+2.  Once in portainer, navigate to the environment you want to add this to, then click on "Add Container"
+3.  for docker.io image, use `ocybress/nerdminer-dashboard-linux:r0.0.1`
+4.  for the ports, add `3000` TCP, and `33333` UDP
+5.  click "diploy the container"
+6.  wait for the container to start
+7.  navigate to `http://localhost:3000` to access the dashboard
+8.  you can expose this via tailscail if you want to access it from other devices
 
 ## Firmware Configuration
 
