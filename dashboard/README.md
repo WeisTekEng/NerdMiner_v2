@@ -2,6 +2,17 @@
 
 This is a local dashboard to monitor your NerdMiner fleet via UDP.
 
+## Features
+
+*   **Real-time Monitoring**: Live updates via UDP Broadcast (port 33333).
+*   **Auto-Discovery**: Miners appear automatically when they start hashing.
+*   **Detailed Stats**:
+    *   Hashrate (Dynamic units: H/s, KH/s, MH/s)
+    *   Miner Name (extracted from wallet address)
+    *   Pool Address & Port
+    *   Uptime, Temperature, Valid Shares, Best Difficulty
+*   **Zero Configuration**: No IP setup needed on miners; just flash and run.
+
 ## Setup
 
 1.  **Install Dependencies**:
