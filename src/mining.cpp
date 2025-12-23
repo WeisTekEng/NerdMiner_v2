@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <ArduinoJson.h>
 #include <WiFi.h>
+#include <WiFiUdp.h>
 #include <esp_task_wdt.h>
 #include <nvs_flash.h>
 #include <nvs.h>
@@ -1206,7 +1207,10 @@ void runMonitor(void *name)
 {
 
   Serial.println("[MONITOR] started");
+  Serial.println("DEBUG: CUSTOM FIRMWARE ACTIVE - UDP ENABLED");
   restoreStat();
+  
+  WiFiUDP udp;
 
   unsigned long mLastCheck = 0;
 
@@ -1265,7 +1269,33 @@ void runMonitor(void *name)
         seconds_elapsed = 0;
         if(currentIntervalIndex < saveIntervalsSize - 1)
           currentIntervalIndex++;
-      }    
+
+      }
+
+      // UDP Reporting
+      if (WiFi.status() == WL_CONNECTED) {
+          StaticJsonDocument<256> doc;
+          doc["id"] = WiFi.macAddress();
+          doc["hashrate"] = String((double)elapsedKHs * 1000.0 / (double)mElapsed, 2);
+          doc["shares"] = shares;
+          doc["valid"] = valids;
+          doc["temp"] = String(temperatureRead(), 1);
+          doc["uptime"] = upTime;
+          // doc["ip"] = WiFi.localIP().toString(); // Optional, receiver can see source IP
+
+
+          String jsonString;
+          serializeJson(doc, jsonString);
+
+          // Use subnet-specific broadcast address for better compatibility
+          udp.beginPacket(WiFi.broadcastIP(), 33333);
+          size_t bytesSent = udp.print(jsonString);
+          if (udp.endPacket()) {
+             Serial.printf("UDP Packet Sent: %s\n", jsonString.c_str());
+          } else {
+             Serial.println("UDP Packet Send Failed");
+          }
+      }
     }
     animateCurrentScreen(frame);
     doLedStuff(frame);

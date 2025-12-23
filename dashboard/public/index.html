@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NerdMiner Dashboard</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS Tokens */
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-color: #10b981;
+            --accent-glow: rgba(16, 185, 129, 0.3);
+            --danger-color: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 3rem;
+        }
+
+        h1 {
+            font-weight: 800;
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .miner-card {
+            background-color: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .miner-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+            border-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .miner-id {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: var(--text-primary);
+            word-break: break-all;
+        }
+
+        .miner-ip {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            background-color: rgba(16, 185, 129, 0.1);
+            color: var(--accent-color);
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            margin-right: 0.5rem;
+            box-shadow: 0 0 10px var(--accent-color);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .stat-item {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .hashrate {
+            color: var(--accent-color);
+            font-size: 1.5rem;
+        }
+
+        .temp-high {
+            color: var(--danger-color);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>NerdMiner Fleet</h1>
+            <div id="total-hashrate" style="font-size: 1.25rem; color: var(--accent-color);">0 KH/s</div>
+        </header>
+
+        <div id="miners-grid" class="grid">
+            <!-- Miner cards will be injected here -->
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const grid = document.getElementById('miners-grid');
+        const totalHashEl = document.getElementById('total-hashrate');
+
+        const miners = {};
+
+        function formatTime(seconds) {
+            const h = Math.floor(seconds / 3600);
+            const m = Math.floor((seconds % 3600) / 60);
+            const s = Math.floor(seconds % 60);
+            return `${h}h ${m}m ${s}s`;
+        }
+
+        function createCard(key) {
+            const div = document.createElement('div');
+            div.className = 'miner-card';
+            div.id = `card-${key}`;
+            return div;
+        }
+
+        function updateCardHTML(miner) {
+            const tempClass = parseFloat(miner.temp) > 70 ? 'temp-high' : '';
+            return `
+                <div class="card-header">
+                    <div>
+                        <div class="miner-id">${miner.id || 'Unknown'}</div>
+                        <div class="miner-ip">${miner.ip}</div>
+                    </div>
+                    <div class="status-badge">
+                        <span class="status-dot"></span> Online
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item" style="grid-column: span 2;">
+                        <span class="stat-label">Hashrate</span>
+                        <span class="stat-value hashrate">${miner.hashrate} <span style="font-size: 0.8rem">KH/s</span></span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Valid Shares</span>
+                        <span class="stat-value">${miner.valid}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Total Shares</span>
+                        <span class="stat-value">${miner.shares}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Temp</span>
+                        <span class="stat-value ${tempClass}">${miner.temp}°C</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Uptime</span>
+                        <span class="stat-value">${formatTime(miner.uptime)}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        function render() {
+            let totalHash = 0;
+
+            // Sort miners by IP or ID
+            const sortedKeys = Object.keys(miners).sort();
+
+            sortedKeys.forEach(key => {
+                const miner = miners[key];
+                totalHash += parseFloat(miner.hashrate) || 0;
+
+                let card = document.getElementById(`card-${key}`);
+                if (!card) {
+                    card = createCard(key);
+                    grid.appendChild(card);
+                }
+                card.innerHTML = updateCardHTML(miner);
+            });
+
+            // Remove old cards
+            const currentIds = new Set(sortedKeys.map(k => `card-${k}`));
+            Array.from(grid.children).forEach(child => {
+                if (!currentIds.has(child.id)) {
+                    child.remove();
+                }
+            });
+
+            totalHashEl.innerText = `${totalHash.toFixed(2)} KH/s Total`;
+        }
+
+        socket.on('init_miners', (data) => {
+            Object.assign(miners, data);
+            render();
+        });
+
+        socket.on('miner_update', (data) => {
+            const key = data.id || data.ip;
+            miners[key] = data;
+            render();
+        });
+
+        socket.on('miner_remove', (id) => {
+            delete miners[id];
+            render();
+        });
+    </script>
+</body>
+
+</html>
