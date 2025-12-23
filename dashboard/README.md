@@ -37,6 +37,29 @@ This is a local dashboard to monitor your NerdMiner fleet via UDP.
 3.  **Access Dashboard**:
     Open your browser and navigate to `http://localhost:3000`.
 
+## Docker & Umbrel Support
+
+You can run this dashboard as a Docker container.
+
+### Linux / Umbrel (Recommended for Production)
+```bash
+docker-compose up -d --build
+```
+*Uses `network_mode: "host"` for proper UDP broadcast reception.*
+
+### Windows (Testing/Development)
+```bash
+docker-compose -f docker-compose.windows.yml up -d --build
+```
+*Uses port mapping. Access at `http://localhost:3000`*
+
+**Note:** UDP broadcasts from miners may not reach the container on Windows due to Docker's networking limitations. For full functionality, deploy on Linux/Umbrel.
+
+### Umbrel
+This app is ready for the Umbrel.
+1.  Copy the `dashboard` folder to your Umbrel apps directory.
+2.  Install via the Umbrel UI (or side-load).
+
 ## Firmware Configuration
 
 The NerdMiner firmware has been modified to broadcast stats to `255.255.255.255` on port `33333` via UDP.
