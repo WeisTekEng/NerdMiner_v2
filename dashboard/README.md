@@ -22,4 +22,4 @@ This is a local dashboard to monitor your NerdMiner fleet via UDP.
 The NerdMiner firmware has been modified to broadcast stats to `255.255.255.255` on port `33333` via UDP.
 Ensure your miners and this computer are on the same network/subnet.
 
-![Dashboard example image](dashboard.png)
+![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard.PNG)
