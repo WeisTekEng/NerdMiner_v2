@@ -103,8 +103,32 @@ async function fetchBitcoinStats() {
 setInterval(fetchBitcoinStats, 60000);
 fetchBitcoinStats(); // Initial fetch
 
+const hashrateHistory = [];
+const MAX_HISTORY = 1440; // 24 hours (1440 minutes)
+
+// Update History every 60 seconds
+setInterval(() => {
+  let totalHashrate = 0;
+  for (const id in miners) {
+    totalHashrate += parseFloat(miners[id].hashrate) || 0;
+  }
+
+  const point = {
+    timestamp: Date.now(),
+    hashrate: totalHashrate
+  };
+
+  hashrateHistory.push(point);
+  if (hashrateHistory.length > MAX_HISTORY) {
+    hashrateHistory.shift();
+  }
+
+  io.emit('history_update', point);
+}, 60000);
+
 io.on('connection', (socket) => {
   socket.emit('init_miners', miners);
+  socket.emit('init_history', hashrateHistory);
   if (bitcoinStats.price) {
     socket.emit('bitcoin_stats', bitcoinStats);
   }

@@ -16,6 +16,10 @@ This is a local dashboard to monitor your NerdMiner fleet via UDP.
     *   Network Hashrate (ZH/s) & Difficulty
     *   Halving Progress Bar
     *   Block Height & Fees
+*   **Fleet Performance**:
+    *   **24-Hour Graph**: Real-time line chart showing total hashrate history.
+    *   **24h Average**: Rolling average calculation.
+    *   **Smart Formatting**: Difficulty (k, M, G, T, P, E) and Hashrate (ZH/s) auto-scaling.
 *   **Zero Configuration**: No IP setup needed on miners; just flash and run.
 
 ## Setup
@@ -39,3 +43,5 @@ The NerdMiner firmware has been modified to broadcast stats to `255.255.255.255`
 Ensure your miners and this computer are on the same network/subnet. you can then expose this via Tailscail
 
 ![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard.PNG)
+
+![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard2.PNG)
