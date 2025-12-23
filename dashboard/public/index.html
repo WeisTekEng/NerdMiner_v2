@@ -157,6 +157,52 @@
             <div id="total-hashrate" style="font-size: 1.25rem; color: var(--accent-color);">0 KH/s</div>
         </header>
 
+        <!-- Bitcoin Stats Card -->
+        <div id="bitcoin-card" class="miner-card" style="margin-bottom: 2rem; display: none;">
+            <div class="card-header">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg" width="32" height="32"
+                        alt="BTC">
+                    <div>
+                        <div class="miner-id">Bitcoin Network</div>
+                        <div class="miner-ip" id="btc-price">Loading...</div>
+                    </div>
+                </div>
+                <div class="status-badge" style="background-color: rgba(247, 147, 26, 0.1); color: #f7931a;">
+                    <span class="status-dot" style="background-color: #f7931a; box-shadow: 0 0 10px #f7931a;"></span>
+                    Live
+                </div>
+            </div>
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+                <div class="stat-item">
+                    <span class="stat-label">Block Height</span>
+                    <span class="stat-value" id="btc-height">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Halving</span>
+                    <span class="stat-value" id="btc-halving">-</span>
+                    <div
+                        style="width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 4px;">
+                        <div id="btc-halving-bar"
+                            style="width: 0%; height: 100%; background: #f7931a; border-radius: 2px; transition: width 1s;">
+                        </div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Difficulty</span>
+                    <span class="stat-value" id="btc-diff">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Network Hash</span>
+                    <span class="stat-value" id="btc-network-hash">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Fees (Sat/vB)</span>
+                    <span class="stat-value" id="btc-fees">-</span>
+                </div>
+            </div>
+        </div>
+
         <div id="miners-grid" class="grid">
             <!-- Miner cards will be injected here -->
         </div>
@@ -188,13 +234,14 @@
             const val = parseFloat(strValue);
             if (isNaN(val)) return '0 <span style="font-size: 0.8rem">H/s</span>';
 
-            if (val >= 1000) {
-                return `${(val / 1000).toFixed(2)} <span style="font-size: 0.8rem">MH/s</span>`;
-            } else if (val < 1 && val > 0) {
-                return `${(val * 1000).toFixed(0)} <span style="font-size: 0.8rem">H/s</span>`;
-            } else {
-                return `${val.toFixed(2)} <span style="font-size: 0.8rem">KH/s</span>`;
-            }
+            if (val >= 1e18) return `${(val / 1e18).toFixed(3)} <span style="font-size: 0.8rem">ZH/s</span>`;
+            if (val >= 1e15) return `${(val / 1e15).toFixed(2)} <span style="font-size: 0.8rem">EH/s</span>`;
+            if (val >= 1e12) return `${(val / 1e12).toFixed(2)} <span style="font-size: 0.8rem">PH/s</span>`;
+            if (val >= 1e9) return `${(val / 1e9).toFixed(2)} <span style="font-size: 0.8rem">TH/s</span>`;
+            if (val >= 1e6) return `${(val / 1e6).toFixed(2)} <span style="font-size: 0.8rem">GH/s</span>`;
+            if (val >= 1e3) return `${(val / 1e3).toFixed(2)} <span style="font-size: 0.8rem">MH/s</span>`;
+            if (val >= 1) return `${val.toFixed(2)} <span style="font-size: 0.8rem">KH/s</span>`;
+            return `${(val * 1000).toFixed(0)} <span style="font-size: 0.8rem">H/s</span>`;
         }
 
         function updateCardHTML(miner) {
@@ -284,6 +331,31 @@
         socket.on('miner_remove', (id) => {
             delete miners[id];
             render();
+        });
+
+        socket.on('bitcoin_stats', (data) => {
+            document.getElementById('bitcoin-card').style.display = 'block';
+
+            document.getElementById('btc-price').innerText = `$${data.price.toLocaleString()}`;
+            document.getElementById('btc-height').innerText = data.height.toLocaleString();
+
+            document.getElementById('btc-halving').innerText = `${data.halvingProgress}%`;
+            document.getElementById('btc-halving-bar').style.width = `${data.halvingProgress}%`;
+
+            const diffVal = data.difficulty; // Now validated
+            let diffStr = diffVal.toLocaleString();
+            if (diffVal > 1e12) diffStr = (diffVal / 1e12).toFixed(2) + ' T';
+            document.getElementById('btc-diff').innerText = diffStr;
+
+            // Use pre-fetched network hashrate (convert H/s to KH/s)
+            document.getElementById('btc-network-hash').innerHTML = formatHashrate(data.networkHashrate / 1000);
+
+            if (data.fees) {
+                document.getElementById('btc-fees').innerHTML = `
+                    <span style="color: #ef4444">${data.fees.fastestFee}</span> / 
+                    <span style="color: #f7931a">${data.fees.hourFee}</span>
+                `;
+            }
         });
     </script>
 </body>

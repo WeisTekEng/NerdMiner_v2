@@ -11,6 +11,11 @@ This is a local dashboard to monitor your NerdMiner fleet via UDP.
     *   Miner Name (extracted from wallet address)
     *   Pool Address & Port
     *   Uptime, Temperature, Valid Shares, Best Difficulty
+*   **Bitcoin Network Stats**:
+    *   Real-time Price (USD)
+    *   Network Hashrate (ZH/s) & Difficulty
+    *   Halving Progress Bar
+    *   Block Height & Fees
 *   **Zero Configuration**: No IP setup needed on miners; just flash and run.
 
 ## Setup

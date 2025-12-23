@@ -56,8 +56,58 @@ setInterval(() => {
   }
 }, 5000);
 
+// Bitcoin Stats
+let bitcoinStats = {};
+
+async function fetchBitcoinStats() {
+  try {
+    const [priceRes, heightRes, diffRes, feesRes, miningRes] = await Promise.all([
+      fetch('https://mempool.space/api/v1/prices'),
+      fetch('https://mempool.space/api/blocks/tip/height'),
+      fetch('https://mempool.space/api/v1/difficulty-adjustment'),
+      fetch('https://mempool.space/api/v1/fees/recommended'),
+      fetch('https://mempool.space/api/v1/mining/hashrate/3d')
+    ]);
+
+    const prices = await priceRes.json();
+    const height = parseInt(await heightRes.text());
+    const diffData = await diffRes.json();
+    const fees = await feesRes.json();
+    const miningData = await miningRes.json();
+
+    // Calculate Halving Progress
+    const blocksPerHalving = 210000;
+    const currentHalvingCycle = Math.floor(height / blocksPerHalving);
+    const nextHalvingBlock = (currentHalvingCycle + 1) * blocksPerHalving;
+    const blocksUntilHalving = nextHalvingBlock - height;
+    const halvingProgress = ((blocksPerHalving - blocksUntilHalving) / blocksPerHalving) * 100;
+
+    bitcoinStats = {
+      price: prices.USD,
+      height: height,
+      difficulty: miningData.currentDifficulty, // Corrected source
+      networkHashrate: miningData.currentHashrate, // Direct from API
+      blocksUntilHalving: blocksUntilHalving,
+      halvingProgress: halvingProgress.toFixed(2),
+      fees: fees
+    };
+
+    io.emit('bitcoin_stats', bitcoinStats);
+    // console.log('Updated Bitcoin Stats:', bitcoinStats);
+  } catch (e) {
+    console.error('Error fetching Bitcoin stats:', e.message);
+  }
+}
+
+// Fetch stats every 60 seconds
+setInterval(fetchBitcoinStats, 60000);
+fetchBitcoinStats(); // Initial fetch
+
 io.on('connection', (socket) => {
   socket.emit('init_miners', miners);
+  if (bitcoinStats.price) {
+    socket.emit('bitcoin_stats', bitcoinStats);
+  }
 });
 
 server.listen(HTTP_PORT, () => {
