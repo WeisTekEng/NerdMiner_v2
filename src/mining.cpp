@@ -1257,7 +1257,7 @@ void runMonitor(void *name)
 
       // UDP Reporting
       if (WiFi.status() == WL_CONNECTED) {
-          StaticJsonDocument<256> doc;
+          StaticJsonDocument<512> doc;
           doc["id"] = WiFi.macAddress();
           doc["miner"] = minerName;
           doc["pool"] = Settings.PoolAddress + ":" + String(Settings.PoolPort);
