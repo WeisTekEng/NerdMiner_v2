@@ -54,7 +54,6 @@ GTMphvuZU3QsHbieCwWutf1gRGmLWWEVY5dPq73pkgnz\
     *   **24-Hour Graph**: Real-time line chart showing total hashrate history.
     *   **24h Average**: Rolling average calculation.
     *   **Smart Formatting**: Difficulty (k, M, G, T, P, E) and Hashrate auto-scaling.
-*   **Donations**: Built-in support for multiple crypto tips with QR codes.
 *   **Zero Configuration**: No IP setup needed on miners; just flash and run.
 
 ## Non docker setup
