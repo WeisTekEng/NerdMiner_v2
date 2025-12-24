@@ -100,7 +100,10 @@ To configure a miner remotely:
 5.  The miner will save settings to NVS and restart automatically.
 
 **Note:** This uses a secure proxy through the dashboard backend to communicate with the miner's local API.
+<img width="1903" height="1113" alt="Dashboard" src="https://github.com/user-attachments/assets/6d91323c-5c8c-4ad9-beb9-4f27e5b845e0" />
+<img width="1904" height="1111" alt="Dashboard2" src="https://github.com/user-attachments/assets/772245c8-053c-433e-88d7-74bd811a85f6" />
+<img width="1905" height="1112" alt="EditConfig" src="https://github.com/user-attachments/assets/67a7864e-7795-4adf-9b11-d412df330058" />
 
-![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard.PNG)
 
-![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard2.PNG)
+
+
