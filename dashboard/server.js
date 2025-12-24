@@ -13,6 +13,7 @@ const UDP_PORT = 33333;
 const HTTP_PORT = 3000;
 
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.json());
 
 const miners = {};
 
@@ -27,18 +28,43 @@ udpSocket.on('message', (msg, rinfo) => {
   try {
     const data = JSON.parse(msg.toString());
     const id = data.id || rinfo.address;
+    const ip = data.ip || rinfo.address; // Prefer reported IP to bypass Docker NAT
 
-    miners[id] = {
-      ...data,
-      lastSeen: Date.now(),
-      ip: rinfo.address
-    };
+    // Initialize or update miner
+    if (!miners[id]) {
+      miners[id] = { ...data, lastSeen: Date.now(), ip: ip };
+      // New miner discovered: Fetch full config to get BTC address
+      fetchMinerConfig(ip, id);
+    } else {
+      // Preserve existing address if already fetched
+      const existingAddr = miners[id].address;
+      miners[id] = { ...data, lastSeen: Date.now(), ip: ip };
+      if (existingAddr) miners[id].address = existingAddr;
+      else fetchMinerConfig(ip, id); // Try fetching again if we missed it
+    }
 
     io.emit('miner_update', miners[id]);
   } catch (e) {
     console.error('Invalid JSON from', rinfo.address, msg.toString());
   }
 });
+
+// Helper to fetch config and update miner state
+async function fetchMinerConfig(ip, id) {
+  try {
+    // console.log(`Fetching config for ${id} (${ip})...`);
+    const response = await fetch(`http://${ip}/api/config`, { signal: AbortSignal.timeout(3000) });
+    if (response.ok) {
+      const config = await response.json();
+      if (miners[id]) {
+        miners[id].address = config.address; // Store address
+        io.emit('miner_update', miners[id]); // Push update
+      }
+    }
+  } catch (e) {
+    // console.error(`Failed to fetch config for ${ip}:`, e.message);
+  }
+}
 
 udpSocket.bind(UDP_PORT, () => {
   console.log(`UDP socket listening on port ${UDP_PORT}`);
@@ -101,6 +127,40 @@ async function fetchBitcoinStats() {
 
 // Fetch stats every 60 seconds
 setInterval(fetchBitcoinStats, 60000);
+// Miner Config Proxy
+app.get('/miners/:ip/config', async (req, res) => {
+  try {
+    const { ip } = req.params;
+    console.log(`Proxying GET config to http://${ip}/api/config`);
+    const response = await fetch(`http://${ip}/api/config`, { signal: AbortSignal.timeout(5000) }); // 5s timeout
+    if (!response.ok) throw new Error(`Miner returned ${response.status}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (e) {
+    console.error(`Proxy Error (GET ${req.params.ip}):`, e.cause || e.message);
+    res.status(502).json({ error: e.message });
+  }
+});
+
+app.post('/miners/:ip/config', async (req, res) => {
+  try {
+    const { ip } = req.params;
+    console.log(`Proxying POST config to http://${ip}/api/config`);
+    const response = await fetch(`http://${ip}/api/config`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(req.body),
+      signal: AbortSignal.timeout(5000)
+    });
+    if (!response.ok) throw new Error(`Miner returned ${response.status}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (e) {
+    console.error(`Proxy Error (POST ${req.params.ip}):`, e.cause || e.message);
+    res.status(502).json({ error: e.message });
+  }
+});
+
 fetchBitcoinStats(); // Initial fetch
 
 const hashrateHistory = [];
