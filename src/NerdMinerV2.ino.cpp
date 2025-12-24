@@ -9,6 +9,7 @@
 
 #include "mbedtls/md.h"
 #include "wManager.h"
+#include "api.h"
 #include "mining.h"
 #include "monitor.h"
 #include "drivers/displays/display.h"
@@ -132,7 +133,11 @@ void setup()
 #endif
 
   /******** INIT WIFI ************/
+  /******** INIT WIFI ************/
   init_WifiManager();
+
+  /******** INIT API ************/
+  setupAPI();
 
   /******** CREATE TASK TO PRINT SCREEN *****/
   //tft.pushImage(0, 0, MinerWidth, MinerHeight, MinerScreen);
@@ -223,6 +228,7 @@ void loop() {
   touchHandler.isTouched();
 #endif
   wifiManagerProcess(); // avoid delays() in loop when non-blocking and other long running code
+  api_loop();
 
   vTaskDelay(50 / portTICK_PERIOD_MS);
 }

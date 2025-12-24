@@ -1263,11 +1263,12 @@ void runMonitor(void *name)
           doc["pool"] = Settings.PoolAddress + ":" + String(Settings.PoolPort);
           doc["bestDiff"] = String(best_diff, 5);
           doc["hashrate"] = String((double)elapsedKHs * 1000.0 / (double)mElapsed, 2);
-          doc["shares"] = shares;
+          doc["shares"] = shares; 
+          doc["templates"] = templates;
           doc["valid"] = valids;
           doc["temp"] = String(temperatureRead(), 1);
           doc["uptime"] = upTime;
-          // doc["ip"] = WiFi.localIP().toString(); // Optional, receiver can see source IP
+          doc["ip"] = WiFi.localIP().toString(); // Required for Docker NAT traversal
 
 
           String jsonString;
