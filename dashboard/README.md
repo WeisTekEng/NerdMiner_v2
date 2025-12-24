@@ -2,7 +2,7 @@
 
 This is a local dashboard to monitor and configure your NerdMiner fleet via UDP, and Rest API.
 
-> **Updated Firmware Required**: In order to use the dashboard you must update the firmware on your specific device, The firmware has been updated to broadcast a json payload via UDP including the miner's IP address in. Broadcasting the miner's IP resolves connectivity issues when running in Docker/Umbrel where the source IP is masked. Please flash the latest firmware to use Remote Configuration.
+> **Updated Firmware Required**: In order to use the dashboard you must update the firmware on your specific device, The firmware has been updated to broadcast a json payload via UDP including the miner's IP address. Broadcasting the miner's IP resolves connectivity issues when running in Docker/Umbrel where the source IP is masked. Please flash the latest firmware to use Remote Configuration.
 
 ## Tips / donations.
 
