@@ -227,3 +227,24 @@ function formatDifficulty(val) {
     if (val >= 1e3) return (val / 1e3).toFixed(2) + ' k';
     return val.toFixed(2);
 }
+
+// Copy BTC address function
+function copyBtcAddress() {
+    const addressEl = document.getElementById('btc-donation-address');
+    const address = addressEl.innerText;
+    
+    navigator.clipboard.writeText(address).then(() => {
+        const btn = event.target.closest('.copy-btn');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
+        btn.style.background = '#059669';
+        
+        setTimeout(() => {
+            btn.innerHTML = originalText;
+            btn.style.background = '';
+        }, 2000);
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy address. Please copy manually.');
+    });
+}

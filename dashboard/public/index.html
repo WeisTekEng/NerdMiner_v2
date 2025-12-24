@@ -148,6 +148,109 @@
         .temp-high {
             color: var(--danger-color);
         }
+
+        /* Donation Banner */
+        .donation-banner {
+            margin-top: 3rem;
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(59, 130, 246, 0.1) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .donation-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .donation-text h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .donation-text p {
+            margin: 0;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .donation-info {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .btc-address-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .btc-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btc-address {
+            font-family: 'Courier New', monospace;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            word-break: break-all;
+            max-width: 400px;
+        }
+
+        .copy-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+        }
+
+        .copy-btn:active {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 768px) {
+            .donation-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .donation-info {
+                flex-direction: column;
+                width: 100%;
+            }
+
+            .btc-address {
+                max-width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -228,6 +331,36 @@
 
         <div id="miners-grid" class="grid">
             <!-- Miner cards will be injected here -->
+        </div>
+
+        <!-- Donation Banner -->
+        <div class="donation-banner">
+            <div class="donation-content">
+                <div class="donation-text">
+                    <h3>⚡ Support This Project</h3>
+                    <p>Dust or tips BTC appreciated!</p>
+                </div>
+                <div class="donation-info">
+                    <div class="btc-address-container">
+                        <div class="btc-label">Bitcoin Address</div>
+                        <div class="btc-address" id="btc-donation-address">
+                            bc1qjqhg5c2f6da8y4qr7upegwhkvl2376xzlpwf5p
+                        </div>
+                        <button class="copy-btn" onclick="copyBtcAddress()">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+                            </svg>
+                            Copy
+                        </button>
+                    </div>
+                    <div class="qr-placeholder" id="btc-qr-code">
+                        <img src="btc-qr.png" alt="BTC Donation QR Code"
+                            style="width: 120px; height: 120px; border-radius: 0.5rem; background: white; padding: 8px;">
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

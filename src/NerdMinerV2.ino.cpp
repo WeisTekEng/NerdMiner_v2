@@ -106,6 +106,15 @@ void setup()
 
   /******** INIT NERDMINER ************/
   Serial.println("NerdMiner v2 UDP ENABLED......");
+  
+  /******** CPU FREQUENCY OPTIMIZATION ************/
+  uint32_t currentFreq = getCpuFrequencyMhz();
+  Serial.printf("CPU Frequency: %d MHz\n", currentFreq);
+  if (currentFreq < 240) {
+    Serial.println("Boosting CPU to 240MHz for maximum hashrate...");
+    setCpuFrequencyMhz(240);
+    Serial.printf("CPU Frequency after boost: %d MHz\n", getCpuFrequencyMhz());
+  }
 
   /******** INIT DISPLAY ************/
   initDisplay();
