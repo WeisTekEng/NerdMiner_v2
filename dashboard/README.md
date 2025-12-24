@@ -1,15 +1,18 @@
 # NerdMiner Dashboard
 
-This is a local dashboard to monitor your NerdMiner fleet via UDP.
+This is a local dashboard to monitor and configure your NerdMiner fleet via UDP, and Rest API.
 
-# Tips.
+## Tips / donations.
 
 Found this useful? buy me a beer or send a tip, In no way required what so ever, but much appreciated
 
-BTC:bc1qjqhg5c2f6da8y4qr7upegwhkvl2376xzlpwf5p
-ETH:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
-SOL:GTMphvuZU3QsHbieCwWutf1gRGmLWWEVY5dPq73pkgnz
-USDC on Eth:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
+**BTC:** bc1qjqhg5c2f6da8y4qr7upegwhkvl2376xzlpwf5p\
+**ETH:**
+0x1c054d43c8b6452ceb5d9fe773cc7da66764c283\
+**SOL:**
+GTMphvuZU3QsHbieCwWutf1gRGmLWWEVY5dPq73pkgnz\
+**USDC on Ethereum:**
+0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
 
 ## Features
 
@@ -19,7 +22,11 @@ USDC on Eth:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
     *   Hashrate (Dynamic units: H/s, KH/s, MH/s)
     *   Miner Name (extracted from wallet address)
     *   Pool Address & Port
-    *   Uptime, Temperature, Valid Shares, Best Difficulty
+    *   Uptime, Temperature, Valid Shares, Templates, Best Difficulty
+*   **Remote Configuration Rest API**:
+    *   **Settings**: Change Pool, Port, Address, and Password remotely.
+    *   **Persistence**: Settings saved to flash memory (NVS).
+    *   **Auto-Restart**: Miner applies settings automatically.
 *   **Bitcoin Network Stats**:
     *   Real-time Price (USD)
     *   Network Hashrate & Difficulty
@@ -29,6 +36,7 @@ USDC on Eth:0x1c054d43c8b6452ceb5d9fe773cc7da66764c283
     *   **24-Hour Graph**: Real-time line chart showing total hashrate history.
     *   **24h Average**: Rolling average calculation.
     *   **Smart Formatting**: Difficulty (k, M, G, T, P, E) and Hashrate auto-scaling.
+*   **Donations**: Built-in support for multiple crypto tips with QR codes.
 *   **Zero Configuration**: No IP setup needed on miners; just flash and run.
 
 ## Setup
@@ -56,6 +64,8 @@ docker-compose up -d --build
 ```
 *Uses `network_mode: "host"` for proper UDP broadcast reception.*
 
+> **Updated Firmware Required**: We have updated the firmware (`mining.cpp`) to broadcast the miner's IP address in the UDP payload. This resolves connectivity issues when running in Docker/Umbrel where the source IP is masked. Please flash the latest firmware to use Remote Configuration.
+
 ### Windows (Testing/Development)
 ```bash
 docker-compose -f docker-compose.windows.yml up -d --build
@@ -79,6 +89,17 @@ This app is ready for Umbrel.
 
 The NerdMiner firmware has been modified to broadcast stats to `255.255.255.255` on port `33333` via UDP.
 Ensure your miners and this computer are on the same network/subnet. you can then expose this via Tailscail
+
+## Remote Configuration
+
+To configure a miner remotely:
+1.  Ensure you are running the **latest firmware** with `api.cpp` enabled.
+2.  On the dashboard, click the **Gear Icon (⚙️)** on the miner card.
+3.  A modal will appear showing the current settings.
+4.  Update your Pool, Wallet, etc., and click **Save Changes**.
+5.  The miner will save settings to NVS and restart automatically.
+
+**Note:** This uses a secure proxy through the dashboard backend to communicate with the miner's local API.
 
 ![Dashboard example image](https://github.com/WeisTekEng/NerdMiner_v2/blob/dashboard/dashboard/Dashboard.PNG)
 

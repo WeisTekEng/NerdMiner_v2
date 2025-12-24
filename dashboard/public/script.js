@@ -11,6 +11,14 @@ function formatTime(seconds) {
     return `${h}h ${m}m ${s}s`;
 }
 
+function formatCount(val) {
+    if (val >= 1e12) return (val / 1e12).toFixed(2) + ' T';
+    if (val >= 1e9) return (val / 1e9).toFixed(2) + ' B';
+    if (val >= 1e6) return (val / 1e6).toFixed(2) + ' M';
+    if (val >= 1e3) return (val / 1e3).toFixed(2) + ' k';
+    return Math.floor(val).toLocaleString();
+}
+
 function createCard(key) {
     const div = document.createElement('div');
     div.className = 'miner-card';
@@ -43,12 +51,21 @@ function updateCardHTML(miner) {
                         <div class="miner-id">${displayName}</div>
                         <div class="miner-ip">${miner.ip}</div>
                     </div>
-                    <div class="status-badge">
-                        <span class="status-dot"></span> Online
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <button onclick="openConfigModal('${miner.ip}')" class="btn-icon" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 4px;">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.09a2 2 0 0 1-1-1.74v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                        <div class="status-badge">
+                            <span class="status-dot"></span> Online
+                        </div>
                     </div>
                 </div>
                 <div style="margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.05);">
                     <div style="font-size: 0.8rem; color: #94a3b8;">Pool: <span style="color: #f8fafc;">${miner.pool || 'Unknown'}</span></div>
+                    ${miner.address ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem;">Addr: <span style="color: #f8fafc; font-family: monospace;">...${miner.address.split('.')[0].slice(-8)}</span></div>` : ''}
                     ${(miner.miner && miner.miner !== 'Unknown') ? `<div style="font-size: 0.8rem; color: #94a3b8; margin-top: 0.25rem;">ID: <span style="font-family: monospace;">${miner.id}</span></div>` : ''}
                 </div>
                 <div class="stats-grid">
@@ -59,6 +76,10 @@ function updateCardHTML(miner) {
                     <div class="stat-item">
                         <span class="stat-label">Valid Shares</span>
                         <span class="stat-value">${miner.valid}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Templates</span>
+                        <span class="stat-value">${formatCount(parseFloat(miner.templates) || 0)}</span>
                     </div>
                     <div class="stat-item">
                         <span class="stat-label">Best Diff</span>
@@ -232,13 +253,13 @@ function formatDifficulty(val) {
 function copyBtcAddress() {
     const addressEl = document.getElementById('btc-donation-address');
     const address = addressEl.innerText;
-    
+
     navigator.clipboard.writeText(address).then(() => {
         const btn = event.target.closest('.copy-btn');
         const originalText = btn.innerHTML;
         btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg> Copied!';
         btn.style.background = '#059669';
-        
+
         setTimeout(() => {
             btn.innerHTML = originalText;
             btn.style.background = '';
@@ -248,3 +269,83 @@ function copyBtcAddress() {
         alert('Failed to copy address. Please copy manually.');
     });
 }
+
+// Configuration Modal Logic
+const modal = document.getElementById('configModal');
+
+async function openConfigModal(ip) {
+    document.getElementById('configIp').value = ip;
+    document.getElementById('configPool').value = 'Loading...';
+    document.getElementById('configPort').value = '';
+    document.getElementById('configAddr').value = '';
+    document.getElementById('configPass').value = '';
+    document.getElementById('configTz').value = '';
+
+    modal.classList.add('active');
+
+    // Find miner name
+    const minerKey = Object.keys(miners).find(key => miners[key].ip === ip);
+    const miner = miners[minerKey];
+    const minerName = (miner && miner.miner && miner.miner !== 'Unknown') ? miner.miner : 'Miner';
+    document.getElementById('configModalTitle').innerText = `${minerName} Configuration`;
+
+    try {
+        const res = await fetch(`/miners/${ip}/config`);
+        if (!res.ok) throw new Error('Failed to fetch config');
+        const data = await res.json();
+
+        document.getElementById('configPool').value = data.pool || '';
+        document.getElementById('configPort').value = data.port || '';
+        document.getElementById('configAddr').value = data.address || '';
+        document.getElementById('configPass').value = data.password || '';
+        document.getElementById('configTz').value = data.timezone || 0;
+    } catch (e) {
+        alert('Error loading configuration: ' + e.message);
+        closeConfigModal();
+    }
+}
+
+function closeConfigModal() {
+    modal.classList.remove('active');
+}
+
+async function saveConfig() {
+    const ip = document.getElementById('configIp').value;
+    const btn = document.querySelector('#configModal .btn-primary');
+    const originalText = btn.innerText;
+
+    const config = {
+        pool: document.getElementById('configPool').value,
+        port: parseInt(document.getElementById('configPort').value),
+        address: document.getElementById('configAddr').value,
+        password: document.getElementById('configPass').value,
+        timezone: parseInt(document.getElementById('configTz').value)
+    };
+
+    btn.disabled = true;
+    btn.innerText = 'Saving...';
+
+    try {
+        const res = await fetch(`/miners/${ip}/config`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(config)
+        });
+
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || 'Save failed');
+
+        alert('Configuration saved! Miner is restarting...');
+        closeConfigModal();
+    } catch (e) {
+        alert('Error saving configuration: ' + e.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+}
+
+// Close modal when clicking outside
+modal.addEventListener('click', (e) => {
+    if (e.target === modal) closeConfigModal();
+});
