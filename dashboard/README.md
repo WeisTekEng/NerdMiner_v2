@@ -93,7 +93,7 @@ docker-compose -f docker-compose.windows.yml up -d --build
 This app is ready for Umbrel.
 1.  install Portainer from the umbrel app store
 2.  Once in portainer, navigate to the environment you want to add this to, then click on "Add Container"
-3.  for docker.io image, use `ocybress/nerdminer-dashboard-linux:r0.0.7`
+3.  for docker.io image, use `ocybress/nerdminer-dashboard-linux:r0.0.8`
 4.  for the ports, add `3000` TCP, and `33333` UDP
 5.  click "diploy the container"
 6.  wait for the container to start
